@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    
+</head>
+
+<body>
+
+<script>
+
+    async function run(){
+
+        const houseSalesDataset = tf.data.csv('./kc_house_data.csv');
+        houseSalesDataset.columnNames().then(cols => {
+            console.log(cols)
+
+            let sample = houseSalesDataset.take(3);
+
+            sample.forEachAsync(element => {
+                console.log(element)
+            });
+        })
+
+        const pointsDataset = houseSalesDataset.map(record => ({ x: record.sqft_living, y: record.price })); 
+        const points = await pointsDataset.toArray();
+
+        function plot (points, featureName) {
+            tfvis.render.scatterplot(
+                {name: `${featureName} vs House Price`},
+                {values: [points], series: ['original']},
+                {
+                    xLabel: featureName,
+                    yLabel: 'Price',
+                }
+            );
+        }
+
+        plot(points, 'Square Feet');
+
+        const featureValues = points.map(p => p.x);
+        const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 1]);
+
+        const labelValues = points.map(p => p.y);
+        const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1]);
+
+
+    }
+
+    run();
+    //console.log(tf.memory());
+
+</script>
+
+
+</body>
+</html>
